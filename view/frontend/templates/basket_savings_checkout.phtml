@@ -1,0 +1,51 @@
+<?php
+/** @var \ReesMcIvor\BasketSavings\Block\SavingsTotal $block */
+?>
+
+<div class="basket-savings">
+    <?php $totalSavings = $block->calculateTotalSavings(); ?>
+    <?php if($totalSavings['total_savings'] > 0) : ?>
+
+        <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
+            <div class="w-7/12 text-left md:w-auto">
+                <?php echo __(sprintf('Original Price')); ?>
+            </div>
+            <div class="w-5/12 text-right md:w-auto">
+                <?php echo $block->getCurrencySymbol().number_format($totalSavings['total_original_price'], 2); ?>
+            </div>
+        </div>
+
+        <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
+            <div class="w-7/12 text-left md:w-auto">
+                <?php echo __(sprintf('You have Saved')); ?>
+            </div>
+            <div class="w-5/12 text-right md:w-auto text-red-600">
+                <?php echo $block->getCurrencySymbol().number_format($totalSavings['total_savings'], 2); ?>
+            </div>
+        </div>
+
+    <?php endif; ?>
+</div>
+
+<style>
+    .basket-savings {}
+    .text-md {font-size: 1.25rem;}
+    .text-sm {font-size: 0.875rem;}
+    .flex {display: flex;}
+    .pb-2 {padding-bottom: 0.5rem;}
+    .my-2 {margin-top: 0.5rem; margin-bottom: 0.5rem;}
+    .border-b {border-bottom-width: 1px;}
+    .border-container {}
+    .w-7/12 {width: 58.333333%;}
+    .w-5/12 {width: 41.666667%;}
+    .text-left {text-align: left;}
+    .text-right {text-align: right;}
+    .md\:grid {display: grid;}
+    .md\:grid-cols-2 {grid-template-columns: repeat(2, minmax(0, 1fr));}
+    .md\:w-full {width: 100%;}
+    .text-red-600 {color: #ef4444;}
+    .md\:w-auto {width: auto;}
+</style>
+
+
+
