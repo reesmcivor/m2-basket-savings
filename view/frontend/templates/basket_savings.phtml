@@ -2,8 +2,28 @@
 /** @var \ReesMcIvor\BasketSavings\Block\SavingsTotal $block */
 ?>
 
-<div class="custom-block">
-    <p><?= $block->getCustomBlockContent(); ?></p>
+<div class="basket-savings">
+    <?php $totalSavings = $block->calculateTotalSavings(); ?>
+    <?php if($totalSavings['total_savings'] > 0) : ?>
+
+        <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
+            <div class="w-7/12 text-left md:w-auto">
+                <?php echo __(sprintf('Original Price')); ?>
+            </div>
+            <div class="w-5/12 text-right md:w-auto">
+                <?php echo $block->getCurrencySymbol().number_format($totalSavings['total_original_price'], 2); ?>
+            </div>
+        </div>
+
+        <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
+            <div class="w-7/12 text-left md:w-auto">
+                <?php echo __(sprintf('You have Saved')); ?>
+            </div>
+            <div class="w-5/12 text-right md:w-auto text-red-600">
+                <?php echo $block->getCurrencySymbol().number_format($totalSavings['total_savings'], 2); ?>
+            </div>
+        </div>
+
+    <?php endif; ?>
 </div>
 
-SAVINGS GO THER
