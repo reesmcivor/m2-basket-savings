@@ -43,27 +43,28 @@ class Savings extends Template
 
     public function calculateTotalSavings()
     {
-        $totalSavings = 0;
-        $totalOriginalPrice = 0;
+        try {
+            $totalSavings = 0;
+            $totalOriginalPrice = 0;
 
-        $items = $this->getCartItems();
-        foreach ($items as $item)
-        {
-            if($item->getTypeId() != "bundle") {
-                $totalSavings += $this->calculateSavings($item);
-                $totalOriginalPrice += $item->getProduct()->getPrice() * $item->getQty();
+            $items = $this->getCartItems();
+            foreach ($items as $item) {
+                if ($item->getTypeId() != "bundle") {
+                    $totalSavings += $this->calculateSavings($item);
+                    $totalOriginalPrice += $item->getProduct()->getPrice() * $item->getQty();
+                }
             }
 
+            $quote = $this->cart->getQuote();
+            $discountAmount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
+            $totalSavings += $discountAmount;
+            return [
+                'total_original_price' => $totalOriginalPrice,
+                'total_savings' => $totalSavings,
+            ];
+        } catch (\Exception $e) {
+            // silance
         }
-
-        $quote = $this->cart->getQuote();
-        $discountAmount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
-        $totalSavings += $discountAmount;
-
-        return [
-            'total_original_price' => $totalOriginalPrice,
-            'total_savings' => $totalSavings,
-        ];
     }
 
     public function getCurrencySymbol()
