@@ -28,14 +28,14 @@ class Savings extends Template
 
     public function getCartItems()
     {
-        return $this->cart->getQuote()->getAllItems();
+        return $this->cart->getQuote()->getAllVisibleItems();
     }
 
     public function calculateSavings($item)
     {
         $originalPrice = $item->getProduct()->getPrice();
         $salePrice = $item->getPriceInclTax();
-        if($salePrice < $originalPrice) {
+        if($salePrice > 0 && $salePrice < $originalPrice) {
             return $originalPrice - $salePrice;
         }
         return 0;
