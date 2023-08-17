@@ -1,10 +1,12 @@
 <?php
+
 /** @var \ReesMcIvor\BasketSavings\Block\SavingsTotal $block */
+$totalSavings = $block->calculateTotalSavings();
+
 ?>
 
-<div class="basket-savings">
-    <?php $totalSavings = $block->calculateTotalSavings(); ?>
-    <?php if($totalSavings['total_savings'] > 0) : ?>
+<?php if($totalSavings['total_savings'] > 0) : ?>
+    <div class="basket-savings">
 
         <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
             <div class="w-7/12 text-left md:w-auto">
@@ -24,6 +26,6 @@
             </div>
         </div>
 
-    <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>
 

@@ -6,29 +6,33 @@ use Magento\Framework\View\Element\Template;
 use Magento\Checkout\Model\Cart;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Model\Currency;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 
 class Savings extends Template
 {
     protected $cart;
     protected $storeManager;
     protected $currency;
+    protected $productRepository;
 
     public function __construct(
         Template\Context $context,
         Cart $cart,
         StoreManagerInterface $storeManager,
         Currency $currency,
+        ProductRepositoryInterface $productRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->cart = $cart;
         $this->storeManager = $storeManager;
         $this->currency = $currency;
+        $this->productRepository = $productRepository;
     }
 
     public function getCartItems()
     {
-        return $this->cart->getQuote()->getAllVisibleItems();
+        return $this->cart->getQuote()->getAllItems();
     }
 
     public function calculateSavings($item)
@@ -41,37 +45,41 @@ class Savings extends Template
         return 0;
     }
 
-    public function calculateTotalSavings()
+    public function calculateTotalSavings() 
     {
         try {
             $totalSavings = 0;
             $totalOriginalPrice = 0;
 
             $items = $this->getCartItems();
-            foreach ($items as $item) {
-                if ($item->getTypeId() != "bundle") {
-                    $totalSavings += $this->calculateSavings($item);
-                    $totalOriginalPrice += $item->getProduct()->getPrice() * $item->getQty();
+            foreach ($items as $item)
+            {
+                switch ($item->getProduct()->getTypeId())
+                {
+                    case "simple":
+                        $totalSavings += $this->calculateSavings($item) * $item->getQty();
+                        $totalOriginalPrice += $item->getProduct()->getPrice() * $item->getQty();
+                    break;
                 }
             }
 
             $quote = $this->cart->getQuote();
             $discountAmount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
             $totalSavings += $discountAmount;
+
             return [
                 'total_original_price' => $totalOriginalPrice,
                 'total_savings' => $totalSavings,
             ];
+
         } catch (\Exception $e) {
-            // silance
+            // silence is golden
         }
     }
 
     public function getCurrencySymbol()
     {
         $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
-        $currencySymbol = $this->currency->load($currencyCode)->getCurrencySymbol();
-
-        return $currencySymbol;
+        return $this->currency->load($currencyCode)->getCurrencySymbol();
     }
 }
