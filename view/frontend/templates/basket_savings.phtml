@@ -19,7 +19,7 @@ $totalSavings = $block->calculateTotalSavings();
 
         <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
             <div class="w-7/12 text-left md:w-auto">
-                <?php echo __(sprintf('You have Saved')); ?>
+                <?php echo __(sprintf('Saving')); ?>
             </div>
             <div class="w-5/12 text-right md:w-auto text-red-600">
                 <?php echo $block->getCurrencySymbol().number_format($totalSavings['total_savings'], 2); ?>

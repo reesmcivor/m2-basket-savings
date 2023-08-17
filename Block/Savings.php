@@ -45,7 +45,7 @@ class Savings extends Template
         return 0;
     }
 
-    public function calculateTotalSavings() 
+    public function calculateTotalSavings()
     {
         try {
             $totalSavings = 0;
@@ -54,15 +54,16 @@ class Savings extends Template
             $items = $this->getCartItems();
             foreach ($items as $item)
             {
+                $itemQtys = [];
                 switch ($item->getProduct()->getTypeId())
                 {
                     case "simple":
-                        $totalSavings += $this->calculateSavings($item) * $item->getQty();
-                        $totalOriginalPrice += $item->getProduct()->getPrice() * $item->getQty();
+                        $qty = $item->getParentItem() ? $item->getParentItem()->getQty() : $item->getQty();
+                        $totalSavings += $this->calculateSavings($item) * $qty;
+                        $totalOriginalPrice += $item->getProduct()->getPrice() * $qty;
                     break;
                 }
             }
-
             $quote = $this->cart->getQuote();
             $discountAmount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
             $totalSavings += $discountAmount;
