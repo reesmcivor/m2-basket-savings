@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="basket_savings" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Basket Savings</label>
+            <tab>pure</tab>
+            <resource>ReesMcIvor_BasketSavings::config</resource>
+            <group id="general" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1">
+                <label>General</label>
+
+                <field id="show_savings" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1">
+                    <label>Show Savings</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="show_debug" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1">
+                    <label>Show Debug</label>
+                    <depends>
+                        <field id="show_savings">1</field>
+                    </depends>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="debug_ip_addresses" translate="label comment" type="text" sortOrder="2" showInDefault="1" showInWebsite="1">
+                    <label>Debug IP Addresses</label>
+                    <depends>
+                        <field id="show_savings">1</field>
+                        <field id="show_debug">1</field>
+                    </depends>
+                    <comment>Enter the IP Addresses for debugging</comment>
+                </field>
+
+            </group>
+        </section>
+    </system>
+</config>

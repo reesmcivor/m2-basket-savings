@@ -7,6 +7,8 @@ use Magento\Checkout\Model\Cart;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Model\Currency;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
 
 class Savings extends Template
 {
@@ -14,6 +16,8 @@ class Savings extends Template
     protected $storeManager;
     protected $currency;
     protected $productRepository;
+    protected $scopeConfig;
+
 
     public function __construct(
         Template\Context $context,
@@ -21,6 +25,7 @@ class Savings extends Template
         StoreManagerInterface $storeManager,
         Currency $currency,
         ProductRepositoryInterface $productRepository,
+        ScopeConfigInterface $scopeConfig,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -28,6 +33,7 @@ class Savings extends Template
         $this->storeManager = $storeManager;
         $this->currency = $currency;
         $this->productRepository = $productRepository;
+        $this->scopeConfig = $scopeConfig;
     }
 
     public function getCartItems()
@@ -39,6 +45,8 @@ class Savings extends Template
     {
         $originalPrice = $item->getProduct()->getPrice();
         $salePrice = $item->getPriceInclTax();
+
+
         if($salePrice > 0 && $salePrice < $originalPrice) {
             return $originalPrice - $salePrice;
         }
@@ -50,17 +58,27 @@ class Savings extends Template
         try {
             $totalSavings = 0;
             $totalOriginalPrice = 0;
-
             $items = $this->getCartItems();
+            $savingsDebug = [];
+
             foreach ($items as $item)
             {
                 $itemQtys = [];
+                $itemToUse = $item->getParentItem() && $item->getProduct()->getTypeId() == "configurable" ? $item->getParentItem() : $item;
+                $qty = $itemToUse->getQty();
+
+                $savingsDebug[$item->getProduct()->getSku()] = [
+                    'originalPrice' => $itemToUse->getProduct()->getPrice(),
+                    'salePrice' => $itemToUse->getPriceInclTax(),
+                    'qty' => $qty,
+                    'savings' => $this->calculateSavings($itemToUse) * $qty,
+                ];
+
                 switch ($item->getProduct()->getTypeId())
                 {
-                    case "simple":
-                        $qty = $item->getParentItem() ? $item->getParentItem()->getQty() : $item->getQty();
+                    default:
                         $totalSavings += $this->calculateSavings($item) * $qty;
-                        $totalOriginalPrice += $item->getProduct()->getPrice() * $qty;
+                        $totalOriginalPrice += $itemToUse->getProduct()->getPrice() * $qty;
                     break;
                 }
             }
@@ -69,6 +87,7 @@ class Savings extends Template
             $totalSavings += $discountAmount;
 
             return [
+                'debug' => $savingsDebug,
                 'total_original_price' => $totalOriginalPrice,
                 'total_savings' => $totalSavings,
             ];
@@ -82,5 +101,32 @@ class Savings extends Template
     {
         $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
         return $this->currency->load($currencyCode)->getCurrencySymbol();
+    }
+
+    public function getShowDebug()
+    {
+        return $this->scopeConfig->getValue(
+            'basket_savings/general/show_debug',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getShouldShowSavings() : bool
+    {
+        return $this->scopeConfig->getValue('basket_savings/general/show_savings', ScopeInterface::SCOPE_STORE) == 1;
+    }
+
+    public function getDebugIpAddresses() : array
+    {
+        return array_map('trim', explode(",", $this->scopeConfig->getValue(
+            'basket_savings/general/debug_ip_addresses',
+            ScopeInterface::SCOPE_STORE
+        )));
+    }
+
+    public function getIfShouldShowDebug() : bool
+    {
+        return $this->getShowDebug() &&
+            in_array($this->getRequest()->getClientIp(true), $this->getDebugIpAddresses());
     }
 }

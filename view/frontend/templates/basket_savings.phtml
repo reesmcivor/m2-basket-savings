@@ -5,7 +5,13 @@ $totalSavings = $block->calculateTotalSavings();
 
 ?>
 
-<?php if($totalSavings['total_savings'] > 0) : ?>
+<?php if($block->getIfShouldShowDebug()) : ?>
+    <pre>
+        <?php print_r($totalSavings['debug']); ?>
+    </pre>
+<?php endif; ?>
+
+<?php if($block->getShouldShowSavings() && $totalSavings['total_savings'] > 0) : ?>
     <div class="basket-savings">
 
         <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container">
