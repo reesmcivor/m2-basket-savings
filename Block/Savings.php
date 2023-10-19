@@ -41,16 +41,22 @@ class Savings extends Template
         return $this->cart->getQuote()->getAllItems();
     }
 
-    public function calculateSavings($item)
+    public function calculateSavings($originalPrice, $salePrice)
     {
-        $originalPrice = $item->getProduct()->getPrice();
-        $salePrice = $item->getPriceInclTax();
-
-
         if($salePrice > 0 && $salePrice < $originalPrice) {
             return $originalPrice - $salePrice;
         }
         return 0;
+    }
+
+    protected function getSalePrice( $item )
+    {
+        return $item->getProduct()->getSpecialPrice();
+    }
+
+    protected function getPrice( $item )
+    {
+        return $item->getProduct()->getPrice();
     }
 
     public function calculateTotalSavings()
@@ -63,22 +69,31 @@ class Savings extends Template
 
             foreach ($items as $item)
             {
-                $itemQtys = [];
-                $itemToUse = $item->getParentItem() && $item->getProduct()->getTypeId() == "configurable" ? $item->getParentItem() : $item;
-                $qty = $itemToUse->getQty();
 
-                $savingsDebug[$item->getProduct()->getSku()] = [
-                    'originalPrice' => $itemToUse->getProduct()->getPrice(),
-                    'salePrice' => $itemToUse->getPriceInclTax(),
+                // Configurable's cause issues because a simple and configurable end up in the cart.
+                // However the configurable contains the product qty not the simple.
+                if($item->getProduct()->getTypeId() == "configurable") {
+                    continue;
+                }
+                
+                $qty = $item?->getParentItem()?->getQty() ?? $qty;
+                $originalPrice = $this->getPrice($item);
+                $salePrice = $this->getSalePrice($item);
+
+                $savingsDebug[$item->getProduct()->getSku() . "_" . $item->getId()] = [
+                    'type' => $item->getProduct()->getTypeId(),
+                    'originalPrice' => $originalPrice,
+                    'salePrice' => $salePrice,
                     'qty' => $qty,
-                    'savings' => $this->calculateSavings($itemToUse) * $qty,
+                    'savings' => $this->calculateSavings($originalPrice, $salePrice) * $qty,
+                    //'item' => $item->debug()
                 ];
 
                 switch ($item->getProduct()->getTypeId())
                 {
                     default:
-                        $totalSavings += $this->calculateSavings($item) * $qty;
-                        $totalOriginalPrice += $itemToUse->getProduct()->getPrice() * $qty;
+                        $totalSavings += $this->calculateSavings($originalPrice, $salePrice) * $qty;
+                        $totalOriginalPrice += $originalPrice * $qty;
                     break;
                 }
             }
